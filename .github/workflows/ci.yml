@@ -1,0 +1,64 @@
+name: CI
+
+# This workflow will do a compile, build, test and deploy
+# with a variety of languages and configurations.
+# https://help.github.com/actions/language-and-framework-guides
+
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Fetch all history for tags
+
+    - name: Set up Hugo
+      uses: peaceiris/actions-hugo@v2
+      with:
+        hugo-version: '0.119.0' # Use a specific Hugo version
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # Use Node.js 20.x
+        cache: 'npm'
+
+    - name: Install npm dependencies
+      run: npm ci
+
+    - name: Build Hugo site
+      run: hugo --gc --minify
+
+    - name: Run tests (e.g., link checking, basic HTML validation)
+      run: | # This is a placeholder for more sophisticated testing
+        echo "Running basic link checks and HTML validation..."
+        # Example: Install and run a tool like 'htmltest' or 'linkchecker'
+        # npm install -g htmltest
+        # htmltest --directory public
+        # apt-get update && apt-get install -y linkchecker
+        # linkchecker public/
+        echo "Placeholder for advanced testing."
+
+    - name: Upload site artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: hugo-site
+        path: public/
+
+    - name: Deploy to GitHub Pages (on push to main)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+        user_name: 'chirag127'
+        user_email: 'chirag127@users.noreply.github.com'
